@@ -110,13 +110,25 @@ spec:
       volumes:
         - name: {{ printf "%s-tbmq-node-config" $releaseName }}
           configMap:
-            name: {{ ternary (printf "%s-tbmq-node-default-config" $releaseName) .Values.tbmq.existingConfigMap  (empty .Values.tbmq.existingConfigMap) }}
+            name: {{- if .Values.tbmq.existingConfigMap }}
+                      {{ .Values.tbmq.existingConfigMap }}
+                    {{- else if .Values.tbmq.existingJavaOptsConfigMap }}
+                      {{ .Values.tbmq.existingJavaOptsConfigMap }}
+                    {{- else }}
+                      {{ printf "%s-tbmq-node-default-config" $releaseName }}
+                    {{- end }}
             items:
               - key: conf
                 path: thingsboard-mqtt-broker.conf
         - name: {{ printf "%s-tbmq-node-logback-config" $releaseName }}
           configMap:
-            name: {{ ternary (printf "%s-tbmq-node-default-logback-config" $releaseName) .Values.tbmq.existingLogbackConfigMap  (empty .Values.tbmq.existingLogbackConfigMap) }}
+            name: {{- if .Values.tbmq.existingConfigMap }}
+                      {{ .Values.tbmq.existingConfigMap }}
+                    {{- else if .Values.tbmq.existingLogbackConfigMap }}
+                      {{ .Values.tbmq.existingLogbackConfigMap }}
+                    {{- else }}
+                      {{ printf "%s-tbmq-node-default-logback-config" $releaseName }}
+                    {{- end }}
             items:
               - key: logback
                 path: logback.xml
