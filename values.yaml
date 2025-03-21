@@ -35,7 +35,8 @@ tbmq:
   statefulSet:
     # Replica count for TBMQ services.
     replicas: 1
-    # Custom annotations for StatefulSet.
+    # Custom annotations applied to the StatefulSet resource (metadata.annotations).
+    # These are useful for CI/CD tools, Helm diff, audit tracking, etc.
     annotations: { }
   # List of ports for TBMQ service.
   ports:
@@ -150,7 +151,8 @@ tbmq:
   existingLogbackConfigMap: ""
   # Set this parameter to false to disable automatic pod restarts on configMap or secrets updates.
   enableChecksumAnnotations: true
-  # Allows users to define custom annotations for the TBMQ pods.
+  # Custom annotations applied to the TBMQ pods (spec.template.metadata.annotations).
+  # These are commonly used for service discovery (e.g., Prometheus scraping) or logging agents.
   annotations: { }
   # Default readiness probe for TBMQ service.
   readinessProbe:
@@ -220,6 +222,8 @@ tbmq-ie:
   statefulSet:
     # Replica count for TBMQ-IE services.
     replicas: 1
+    # Custom annotations applied to the StatefulSet resource (metadata.annotations).
+    # These are useful for CI/CD tools, Helm diff, audit tracking, etc.
     annotations: { }
   # List of ports for TBMQ-IE service.
   ports:
@@ -322,7 +326,8 @@ tbmq-ie:
   existingLogbackConfigMap: ""
   # Controls whether Helm automatically restarts TBMQ pods when ConfigMaps or Secrets change.
   enableChecksumAnnotations: true
-  # Allows users to define custom annotations for the TBMQ-IE pods.
+  # Custom annotations applied to the TBMQ-IE pods (spec.template.metadata.annotations).
+  # These are commonly used for service discovery (e.g., Prometheus scraping) or logging agents.
   annotations: { }
   # Default readiness probe for TBMQ-IE service.
   readinessProbe:
@@ -363,14 +368,22 @@ tbmq-ie:
   resources: { }
 
 # This section will bring bitnami/redis-cluster (https://artifacthub.io/packages/helm/bitnami/redis-cluster) into this chart.
-# If you want to add some extra configuration parameters, you can put them with key redis-cluster, and they will be passed to bitnami/redis-cluster chart.
+# If you want to add some extra configuration parameters, you can put them under the `redis-cluster` key, and they will be passed to bitnami/redis-cluster chart.
 redis-cluster:
-  # Default name override for bitnami/redis-cluster
+  ## @param nameOverride String to partially override common.names.fullname template (will maintain the release name)
+  ##
   nameOverride: "redis"
-  # Enable or disable bitnami/redis-cluster auth
-  usePassword: true
-  # Default redis password (change for production)
+  ## @param password Redis&reg; password (ignored if existingSecret set)
+  ## Defaults to a random 10-character alphanumeric string if not set and usePassword is true
+  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/redis#setting-the-server-password-on-first-run
+  ##
   password: "myredispassword"
+  ## @param existingSecret Name of existing secret object (for password authentication)
+  ##
+  existingSecret: ""
+  ## @param existingSecretPasswordKey Name of key containing password to be retrieved from the existing secret
+  ##
+  existingSecretPasswordKey: ""
   ## Pod Disruption Budget configuration
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   ##
@@ -529,7 +542,7 @@ externalPostgresql:
   database: "thingsboard_mqtt_broker"
 
 # This section will bring bitnami/postgresql (https://artifacthub.io/packages/helm/bitnami/postgresql) into this chart.
-#  If you want to add some extra configuration parameters, you can put them with key postgresql, and they will be passed to bitnami/postgresql chart
+#  If you want to add some extra configuration parameters, you can put them under the `postgresql` key, and they will be passed to bitnami/postgresql chart
 postgresql:
   # @param enabled If enabled is set to true, externalPostgresql configuration will be ignored
   enabled: true
@@ -551,6 +564,12 @@ postgresql:
     ## @param auth.database Name for a TBMQ database to create
     ##
     database: "thingsboard_mqtt_broker"
+    ## @param auth.existingSecret Name of existing secret to use for PostgreSQL credentials. `auth.postgresPassword`, `auth.password`, and `auth.replicationPassword` will be ignored and picked up from this secret. The secret might also contains the key `ldap-password` if LDAP is enabled. `ldap.bind_password` will be ignored and picked from this secret in this case.
+    ##
+    existingSecret: ""
+    ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    secretKeys:
+      userPasswordKey: password
   ## @section PostgreSQL Primary parameters
   ##
   primary:
@@ -637,7 +656,7 @@ postgresql:
 
 
 # This section will bring bitnami/kafka (https://artifacthub.io/packages/helm/bitnami/kafka) into this chart.
-# If you want to add some extra configuration parameters, you can put them with key kafka, and they will be passed to bitnami/kafka chart
+# If you want to add some extra configuration parameters, you can put them under the `kafka` key, and they will be passed to bitnami/kafka chart
 kafka:
   # Default name override for bitnami/kafka
   nameOverride: "kafka"
@@ -789,9 +808,9 @@ kafka:
 # Load Balancer Configuration
 # This section defines the load balancer settings for TBMQ.
 # Supported types:
-# - AWS: Uses Application Load Balancer (ALB) for HTTP(S) traffic and Network Load Balancer (NLB) for MQTT traffic.
-# - Azure: Uses Application Gateway for HTTP(S) traffic and Azure Load Balancer for MQTT traffic.
-# - GCP: Uses HTTPS Load Balancer for HTTP(S) traffic and Network Load Balancer (NLB) for MQTT traffic.
+# - AWS: Uses Application Load Balancer (ALB) for HTTP(S) traffic and Network Load Balancer (NLB) for MQTT(S) traffic.
+# - Azure: Uses Application Gateway for HTTP(S) traffic and Azure Load Balancer for MQTT(S) traffic.
+# - GCP: Uses HTTPS Load Balancer for HTTP(S) traffic and Network Load Balancer (NLB) for MQTT(S) traffic.
 # - Nginx: Use basic Kubernetes Ingress for HTTP and a LoadBalancer service for MQTT without cloud-specific integrations.
 loadbalancer:
   # Load balancer type. Supported values: "nginx", "aws", "azure", "gcp".
