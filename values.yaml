@@ -19,7 +19,7 @@ installation:
   # When this chart installing via ArgoCd.
   argocd: false
 
-## Section to configure TBMQ service.
+# Section to configure TBMQ service.
 tbmq:
   # Docker image configuration.
   image:
@@ -31,13 +31,13 @@ tbmq:
   imagePullSecret: regcred
   # Image pull policy.
   imagePullPolicy: Always
-  # Statefulset option for tbmq service
+  # Statefulset option for TBMQ service.
   statefulSet:
-    # Replica count for tbmq services.
+    # Replica count for TBMQ services.
     replicas: 1
     # Custom annotations for StatefulSet.
     annotations: { }
-  # List of ports for tbmq service.
+  # List of ports for TBMQ service.
   ports:
     - name: http
       value: 8083
@@ -56,7 +56,7 @@ tbmq:
   # Usually it is Map type. Example:
   # nodeSelector:
   #    role: tbmq-node
-  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details.
   nodeSelector: { }
   # Affinity for choosing nodes for scheduling pods.
   # Note that this is a default kubernetes object, so you need to specify a whole object, not just labels.
@@ -71,7 +71,7 @@ tbmq:
   #            values:
   #            - antarctica-east1
   #            - antarctica-west1
-  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details.
   affinity: { }
   # Custom environment variables that are always applied, regardless of configuration source.
   # These variables will be appended to the container environment and will override any conflicting
@@ -82,24 +82,21 @@ tbmq:
   # customEnv:
   #   SECURITY_MQTT_SSL_ENABLED: "true"
   #
-  # Even if `existingConfigMap` or `existingJavaOptsConfigMap` define `SECURITY_MQTT_SSL_ENABLED`, the value from `customEnv`
-  # will take precedence.
-  #
+  # Even if `existingConfigMap` or `existingJavaOptsConfigMap` define `SECURITY_MQTT_SSL_ENABLED`,
+  # the value from `customEnv` will take precedence.
   customEnv: {
     SECURITY_MQTT_BASIC_ENABLED: "true"
   }
   # Name of an existing ConfigMap that will override TBMQ Java and Logback configurations.
   # If set, this ConfigMap should contain BOTH Java options (`conf` key) and Logback settings (`logback` key).
-  # This has the highest priority and will ignore `existingJavaOptsConfigMap` and `existingLogbackConfigMap`.
   #
-  # This has the highest priority for configuration files but does NOT override environment variables set via `customEnv`
-  # or `envFrom` sources (e.g., PostgreSQL, Kafka, Redis configurations).
+  # This has the highest priority and will ignore `existingJavaOptsConfigMap` and `existingLogbackConfigMap`
+  # but does NOT override environment variables set via `customEnv` or `envFrom` sources (e.g., PostgreSQL, Kafka, Redis configurations).
   #
   # If not set, TBMQ will fall back to `existingJavaOptsConfigMap` and `existingLogbackConfigMap`.
   # If none are provided, default configurations will be used.
   #
   # For examples of the expected structure, see `existingJavaOptsConfigMap` and `existingLogbackConfigMap`.
-  #
   existingConfigMap: ""
   # Name of an existing TBMQ Java options config map.
   # This ConfigMap should contain a key named `conf` with Java options.
@@ -114,13 +111,13 @@ tbmq:
   #   conf: |
   #     export JAVA_OPTS="$JAVA_OPTS -Dplatform=deb -Dinstall.data_dir=/usr/share/thingsboard-mqtt-broker/data"
   #     export JAVA_OPTS="$JAVA_OPTS -Xlog:gc*,heap*,age*,safepoint=debug:file=/var/log/thingsboard-mqtt-broker/${TB_SERVICE_ID}-gc.log:time,uptime,level,tags:filecount=10,filesize=10M"
+  #     ...
   #     export LOG_FILENAME=thingsboard-mqtt-broker.out
   #     export LOADER_PATH=/usr/share/thingsboard-mqtt-broker/conf"
   #     ...
   #
   # The following file contains an example of values that should be placed under the `conf` key:
   # https://github.com/thingsboard/tbmq/blob/main/docker/tb-mqtt-broker/conf/thingsboard-mqtt-broker.conf
-  #
   existingJavaOptsConfigMap: ""
   # Name of an existing TBMQ logback config map.
   # This ConfigMap should contain a key named `logback` with the logging configuration.
@@ -150,52 +147,68 @@ tbmq:
   #
   # The following file contains an example of values that should be placed under the `logback` key:
   # https://github.com/thingsboard/tbmq/blob/main/docker/tb-mqtt-broker/conf/logback.xml
-  #
   existingLogbackConfigMap: ""
-  # Set this parameter to false to disable automatic pod restarts on configMap or secrets updates
+  # Set this parameter to false to disable automatic pod restarts on configMap or secrets updates.
   enableChecksumAnnotations: true
+  # Allows users to define custom annotations for the TBMQ pods.
   annotations: { }
-  # Default readiness probe for tbmq service
+  # Default readiness probe for TBMQ service.
   readinessProbe:
     tcpSocket:
+      # Port checked to determine readiness.
       port: 1883
+    # Maximum time to wait before considering the check failed.
     timeoutSeconds: 10
+    # Delay before the first readiness probe.
     initialDelaySeconds: 30
+    # Interval between probe executions.
     periodSeconds: 20
+    # Minimum number of successes before marking pod as "ready".
     successThreshold: 1
+    # Number of failures before the pod is removed from service endpoints.
     failureThreshold: 5
-  # Default liveness probe for tbmq service
+  # Default liveness probe for TBMQ service.
   livenessProbe:
     tcpSocket:
+      # Port checked to determine liveness.
       port: 1883
+    # Maximum time to wait before considering the check failed.
     timeoutSeconds: 10
+    # Delay before the first liveness probe.
     initialDelaySeconds: 60
+    # Interval between probe executions.
     periodSeconds: 10
+    # Minimum number of successes before marking pod as "alive".
     successThreshold: 1
+    # Number of consecutive failures before restarting the pod.
     failureThreshold: 10
-  # Default pod restart policy
+  # Defines the restart policy for TBMQ pods.
   restartPolicy: Always
   securityContext:
+    # User ID to run the container.
     runAsUser: 799
+    # Enforces non-root execution.
     runAsNonRoot: true
+    # File system group ID for permissions.
     fsGroup: 799
-  # Default resources for tbmq pods.
-  ## Example:
-  ## resources:
-  ##   limits:
-  ##     cpu: "1.5"
-  ##     memory: 3Gi
-  ##   # Default requests for CPU and Memory that pods will try to use
-  ##   requests:
-  ##     cpu: "1.5"
-  ##     memory: 3Gi
+  # Defines CPU/memory requests & limits.
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: "1.5"
+  #     memory: 3Gi
+  #   # Default requests for CPU and Memory that pods will try to use.
+  #   requests:
+  #     cpu: "1.5"
+  #     memory: 3Gi
+  # See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#pod-level-resource-specification for more details.
   resources: { }
 
 ## Section to configure TBMQ Integration executor service.
 tbmq-ie:
   # Docker image configuration.
   image:
-    # Docker image repository for TBMQ node.
+    # Docker image repository for TBMQ-IE node.
     repository: thingsboard/tbmq-integration-executor
     # Image tag/version.
     tag: 2.1.0-SNAPSHOT
@@ -203,12 +216,12 @@ tbmq-ie:
   imagePullSecret: regcred
   # Image pull policy.
   imagePullPolicy: Always
-  # Statefulset option for tbmq-ie service.
+  # Statefulset option for TBMQ-IE service.
   statefulSet:
-    # Replica count for tbmq-ie services
+    # Replica count for TBMQ-IE services.
     replicas: 1
     annotations: { }
-  # List of ports for tbmq-ie service.
+  # List of ports for TBMQ-IE service.
   ports:
     - name: http
       value: 8082
@@ -217,7 +230,7 @@ tbmq-ie:
   # Usually it is Map type. Example:
   # nodeSelector:
   #    role: tbmq-ie
-  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details.
   nodeSelector: { }
   # Affinity for choosing nodes for scheduling pods.
   # Note that this is a default kubernetes object, so you need to specify a whole object, not just labels.
@@ -232,7 +245,7 @@ tbmq-ie:
   #            values:
   #            - antarctica-east1
   #            - antarctica-west1
-  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ for more details.
   affinity: { }
   # Custom environment variables that are always applied, regardless of configuration source.
   # These variables will be appended to the container environment and will override any conflicting
@@ -243,44 +256,110 @@ tbmq-ie:
   # customEnv:
   #   TB_SERVICE_INTEGRATIONS_EXCLUDED: "HTTP"
   #
-  # Even if `existingConfigMap` or `existingJavaOptsConfigMap` define `TB_SERVICE_INTEGRATIONS_EXCLUDED`, the value from `customEnv`
-  # will take precedence.
-  #
+  # Even if `existingConfigMap` or `existingJavaOptsConfigMap` define `TB_SERVICE_INTEGRATIONS_EXCLUDED`,
+  # the value from `customEnv` will take precedence.
   customEnv: { }
-  # Name of an existing TBMQ config map. Used mostly for JVM options. In the config map, key conf is expected.
+  # Name of an existing ConfigMap that will override TBMQ-IE Java and Logback configurations.
+  # If set, this ConfigMap should contain BOTH Java options (`conf` key) and Logback settings (`logback` key).
+  #
+  # This has the highest priority and will ignore `existingJavaOptsConfigMap` and `existingLogbackConfigMap`
+  # but does NOT override environment variables set via `customEnv` or `envFrom` sources (e.g., PostgreSQL, Kafka, Redis configurations).
+  #
+  # If not set, TBMQ will fall back to `existingJavaOptsConfigMap` and `existingLogbackConfigMap`.
+  # If none are provided, default configurations will be used.
+  #
+  # For examples of the expected structure, see `existingJavaOptsConfigMap` and `existingLogbackConfigMap`.
   existingConfigMap: ""
-  # Name of an existing TBMQ logback config map. Used mostly for JVM options. In the config map, key logback is expected.
+  # Name of an existing TBMQ-IE Java options config map.
+  # This ConfigMap should contain a key named `conf` with Java options.
+  #
+  # Custom ConfigMap example:
+  #
+  # apiVersion: v1
+  # kind: ConfigMap
+  # metadata:
+  #   name: my-tbmq-ie-java-opts-config
+  # data:
+  #   conf: |
+  #     export JAVA_OPTS="$JAVA_OPTS -Xlog:gc*,heap*,age*,safepoint=debug:file=/var/log/tbmq-integration-executor/${TB_SERVICE_ID}-gc.log:time,uptime,level,tags:filecount=10,filesize=10M"
+  #     export JAVA_OPTS="$JAVA_OPTS -XX:+IgnoreUnrecognizedVMOptions -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/tbmq-integration-executor/${TB_SERVICE_ID}-heapdump.bin"
+  #     ...
+  #     export LOG_FILENAME=tbmq-integration-executor.out
+  #     export LOADER_PATH=/usr/share/tbmq-integration-executor/conf
+  #     ...
+  #
+  # The following file contains an example of values that should be placed under the `conf` key:
+  # https://github.com/thingsboard/tbmq/blob/main/docker/tbmq-integration-executor/conf/tbmq-integration-executor.conf
+  existingJavaOptsConfigMap: ""
+  # Name of an existing TBMQ-IE logback config map.
+  # This ConfigMap should contain a key named `logback` with the logging configuration.
+  #
+  # Custom ConfigMap example:
+  #
+  # apiVersion: v1
+  # kind: ConfigMap
+  # metadata:
+  #   name: my-tbmq-logging-config
+  # data:
+  #   logback: |
+  #     <!DOCTYPE configuration>
+  #     <configuration scan="true" scanPeriod="10 seconds">
+  #         <appender name="fileLogAppender"
+  #                   class="ch.qos.logback.core.rolling.RollingFileAppender">
+  #             <file>/var/log/thingsboard-mqtt-broker/${TB_SERVICE_ID}/thingsboard-mqtt-broker.log</file>
+  #             <rollingPolicy
+  #                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+  #                 <fileNamePattern>/var/log/thingsboard-mqtt-broker/${TB_SERVICE_ID}/thingsboard-mqtt-broker.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+  #                 <maxFileSize>100MB</maxFileSize>
+  #                 <maxHistory>30</maxHistory>
+  #                 <totalSizeCap>3GB</totalSizeCap>
+  #             </rollingPolicy>
+  #         </appender>
+  #         ...
+  #
+  # The following file contains an example of values that should be placed under the `logback` key:
+  # https://github.com/thingsboard/tbmq/blob/main/docker/tbmq-integration-executor/conf/logback.xml
   existingLogbackConfigMap: ""
-  # Set this parameter to false to disable automatic pod restarts on configMap updates
+  # Controls whether Helm automatically restarts TBMQ pods when ConfigMaps or Secrets change.
   enableChecksumAnnotations: true
+  # Allows users to define custom annotations for the TBMQ-IE pods.
   annotations: { }
-  # Default readiness probe for tbmq-ie service
+  # Default readiness probe for TBMQ-IE service.
   readinessProbe:
+    # Interval between probe executions.
     periodSeconds: 20
     tcpSocket:
+      # Port checked to determine readiness.
       port: http
-  # Default liveness probe for tbmq-ie service
+  # Default liveness probe for TBMQ-IE service.
   livenessProbe:
+    # Delay before the first liveness probe.
     initialDelaySeconds: 120
+    # Interval between probe executions.
     periodSeconds: 20
     tcpSocket:
+      # Port checked to determine liveness.
       port: http
-  # Default pod restart policy
+  # Defines the restart policy for TBMQ-IE pods.
   restartPolicy: Always
   securityContext:
+    # User ID to run the container.
     runAsUser: 799
+    # Enforces non-root execution.
     runAsNonRoot: true
+    # File system group ID for permissions.
     fsGroup: 799
-  # Default resources for tbmq-ie pods.
-  ## Example:
-  ## resources:
-  ##   limits:
-  ##     cpu: "1.5"
-  ##     memory: 3Gi
-  ##   # Default requests for CPU and Memory that pods will try to use
-  ##   requests:
-  ##     cpu: "1.5"
-  ##     memory: 3Gi
+  # Defines CPU/memory requests & limits.
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: "1.5"
+  #     memory: 3Gi
+  #   # Default requests for CPU and Memory that pods will try to use
+  #   requests:
+  #     cpu: "1.5"
+  #     memory: 3Gi
+  # See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#pod-level-resource-specification for more details.
   resources: { }
 
 # This section will bring bitnami/redis-cluster (https://artifacthub.io/packages/helm/bitnami/redis-cluster) into this chart.
