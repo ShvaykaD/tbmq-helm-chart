@@ -94,7 +94,7 @@ redis-password
 {{/*Return postgresql secret key*/}}
 {{- define "tbmq.postgres.secretKey" -}}
 {{- if and .Values.postgresql.enabled .Values.postgresql.auth.existingSecret -}}
-{{- .Values.postgresql.auth.secretKeys.userPasswordKey }}
+{{- .Values.postgresql.auth.secretKeys.adminPasswordKey }}
 {{- else -}}
 postgres-password
 {{- end -}}

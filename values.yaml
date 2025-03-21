@@ -561,7 +561,7 @@ postgresql:
     ## @param auth.password Password for the custom user to create. Ignored if `auth.existingSecret` is provided
     ##
     password: "postgres"
-    ## @param auth.database Name for a TBMQ database to create
+    ## @param auth.database PostgreSQL database name for TBMQ.
     ##
     database: "thingsboard_mqtt_broker"
     ## @param auth.existingSecret Name of existing secret to use for PostgreSQL credentials. `auth.postgresPassword`, `auth.password`, and `auth.replicationPassword` will be ignored and picked up from this secret. The secret might also contains the key `ldap-password` if LDAP is enabled. `ldap.bind_password` will be ignored and picked from this secret in this case.
@@ -569,7 +569,7 @@ postgresql:
     existingSecret: ""
     ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
     secretKeys:
-      userPasswordKey: password
+      adminPasswordKey: password
   ## @section PostgreSQL Primary parameters
   ##
   primary:
